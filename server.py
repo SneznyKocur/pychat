@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import socket
 import json
-
+import threading
 
 @dataclass 
 class packet_ids:
@@ -14,8 +14,8 @@ class packet_ids:
     FETCH: int = 0b0111
     SEND_MSG: int = 0b1000
     RCV_MSG: int = 0b1001
-    FETCH_REPLY: int = 0b1001
-    
+    FETCH_REPLY: int = 0b1010
+
 @dataclass
 class Packet:
     packet_id: int
@@ -35,7 +35,7 @@ class Packet:
 
 # ENCRYPTED:
     # AUTH DATA
-    # client is sending the user auth data
+    # client is sending the user auth data through the encrypted stream
 
     # AUTH REPLY
     # server reply to auth data
@@ -59,34 +59,31 @@ class Packet:
 #       <data> 
 #   }
 # }
-class Client:
-    def connect(self, ip: str):
+class Server:
+    def _recvLoop(self):
+        while(self.conn):
+            packet = self._recvPacket()
+            print(f"C -> S: {packet.packet_id}")
+            
+    def listen(self, port: int = 5000):
+        host = socket.gethostname()
         self.s = socket.socket(socket.AddressFamily.AF_INET,socket.SocketKind.SOCK_STREAM)
-        try:
-            self.s.connect(ip)
-        except Exception as e:
-            print(e)
-        pass
-    
-    
+        self.s.bind((host,port))
+        self.s.listen(20)
+        self.conn, self.address = self.s.accept()
+        
     def _sendPacket(self, packet: Packet):
         data = {"type":packet.packet_id, "data":packet.data}
         self.s.sendall(str(data).encode())
+        print(f"C <- S: {packet.packet_id}")
         pass
     
     
-    def _sendMessage(self, message: str):
-        data = {"message":message}
-        packet = Packet(packet_ids.SEND_MSG, data)
-        self._sendPacket(packet)
         
         
     def _recvPacket(self) -> Packet:
         data = json.loads(str(self.s.recv(1024).decode()))
         packet = Packet(data["type"], data["data"])
-        
-client = Client()
-client.connect("localhost")
-while True:
-    packet_id = input("PACKET_ID:")
-    data = input("data:")
+    
+server = Server()
+server.listen()
