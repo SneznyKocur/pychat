@@ -60,10 +60,12 @@ class Packet:
 #   }
 # }
 class Client:
-    def connect(self, ip: str):
+    def connect(self, ip: str, port: int):
         self.s = socket.socket(socket.AddressFamily.AF_INET,socket.SocketKind.SOCK_STREAM)
+        host = socket.gethostname()
+        print(host)
         try:
-            self.s.connect(ip)
+            self.s.connect((host,port))
         except Exception as e:
             print(e)
         pass
@@ -86,7 +88,7 @@ class Client:
         packet = Packet(data["type"], data["data"])
         
 client = Client()
-client.connect("localhost")
+client.connect("127.0.0.1",5000)
 while True:
     packet_id = input("PACKET_ID:")
     data = input("data:")

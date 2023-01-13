@@ -60,8 +60,9 @@ class Packet:
 #   }
 # }
 class Server:
+    # TODO: FIX THIS   
     def _recvLoop(self):
-        while(self.conn):
+        while(True):
             packet = self._recvPacket()
             print(f"C -> S: {packet.packet_id}")
             
@@ -71,7 +72,8 @@ class Server:
         self.s.bind((host,port))
         self.s.listen(20)
         self.conn, self.address = self.s.accept()
-        
+        t = threading.Thread(target=self._recvLoop)
+        t.start()
     def _sendPacket(self, packet: Packet):
         data = {"type":packet.packet_id, "data":packet.data}
         self.s.sendall(str(data).encode())
