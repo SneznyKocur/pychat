@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import socket
+import json
 
 
 @dataclass 
@@ -46,16 +47,41 @@ class Packet:
 # RECIEVE MSG
 # server is notifying a new message has been send
 
-
-class client(self):
-    def connect(ip: str):
-        # TODO
-    def sendPacket(packet: Packet):
-        # TODO
-        packet = Packet(packet_id, data)
+# Packet:
+# { 
+#   type:<PACKET_ID>
+#   data: {
+#       <data> 
+#   }
+# }
+class Client:
+    def connect(self, ip: str):
+        self.s = socket.socket(socket.AddressFamily.AF_INET,socket.SocketKind.SOCK_STREAM)
+        try:
+            self.s.connect(ip)
+        except Exception as e:
+            print(e)
         pass
-    def sendMessage(message: str)
-        # TODO
+    
+    
+    def _sendPacket(self, packet: Packet):
+        data = {"type":packet.packet_id, "data":packet.data}
+        self.s.sendall(str(data).encode())
+        pass
+    
+    
+    def _sendMessage(self, message: str):
         data = {"message":message}
         packet = Packet(packet_ids.SEND_MSG, data)
-        sendPacket(packet)
+        self._sendPacket(packet)
+        
+        
+    def _recvPacket(self) -> Packet:
+        data = json.loads(str(self.s.recv(1024).decode()))
+        packet = Packet(data["type"], data["data"])
+        
+client = Client()
+client.connect("localhost")
+while True:
+    packet_id = input("PACKET_ID:")
+    data = input("data:")
