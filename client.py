@@ -73,22 +73,23 @@ class Client:
     
     def _sendPacket(self, packet: Packet):
         data = {"type":packet.packet_id, "data":packet.data}
-        self.s.sendall(str(data).encode())
-        pass
-    
+        return self.s.send(str(data).encode())
+        
     
     def _sendMessage(self, message: str):
         data = {"message":message}
         packet = Packet(packet_ids.SEND_MSG, data)
-        self._sendPacket(packet)
+        return self._sendPacket(packet)
         
         
     def _recvPacket(self) -> Packet:
         data = json.loads(str(self.s.recv(1024).decode()))
         packet = Packet(data["type"], data["data"])
-        
+        return packet
 client = Client()
 client.connect("127.0.0.1",5000)
 while True:
     packet_id = input("PACKET_ID:")
-    data = input("data:")
+    data = {"data":input("data:")}
+    client._sendPacket(packet=Packet(packet_id,data))
+    print(client._recvPacket())
