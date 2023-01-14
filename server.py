@@ -60,12 +60,16 @@ class Packet:
 #   }
 # }
 class Server:
-    # TODO: FIX THIS   
     def _recvLoop(self):
         while(True):
-            packet = self._recvPacket()
-            print(f"C -> S: {packet.packet_id}")
-            
+            try:
+                packet = self._recvPacket()
+                print(f"C -> S: {packet.packet_id}, {packet.data}")
+                packet = Packet(packet_ids.HANDSHAKE_CONTINUE,"1")
+                self._sendPacket(packet)
+            except KeyboardInterrupt:
+                self.s.close()
+                exit()
     def listen(self, port: int = 5000):
         host = socket.gethostname()
         self.s = socket.socket(socket.AddressFamily.AF_INET,socket.SocketKind.SOCK_STREAM)
@@ -76,7 +80,7 @@ class Server:
         t.start()
     def _sendPacket(self, packet: Packet):
         data = {"type":packet.packet_id, "data":packet.data}
-        self.s.sendall(str(data).encode())
+        self.conn.send(str(data).encode())
         print(f"C <- S: {packet.packet_id}")
         pass
     
@@ -84,8 +88,10 @@ class Server:
         
         
     def _recvPacket(self) -> Packet:
-        data = json.loads(str(self.s.recv(1024).decode()))
+        recv = str(self.conn.recv(1024).decode()).replace("'",'"')
+        print(recv)
+        data = json.loads(recv)
         packet = Packet(data["type"], data["data"])
-    
+        return packet
 server = Server()
 server.listen()

@@ -68,7 +68,8 @@ class Client:
             self.s.connect((host,port))
         except Exception as e:
             print(e)
-        pass
+        else:
+            return 0
     
     
     def _sendPacket(self, packet: Packet):
@@ -86,10 +87,15 @@ class Client:
         data = json.loads(str(self.s.recv(1024).decode()))
         packet = Packet(data["type"], data["data"])
         return packet
+    
+    
 client = Client()
 client.connect("127.0.0.1",5000)
 while True:
     packet_id = input("PACKET_ID:")
-    data = {"data":input("data:")}
+    
+    data1 = f"{input('data:')}"
+    
+    data = {"data":data1}
     client._sendPacket(packet=Packet(packet_id,data))
     print(client._recvPacket())
